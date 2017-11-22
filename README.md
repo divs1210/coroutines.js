@@ -2,6 +2,59 @@
 
 Coroutines for JavaScript. A port of [this Clojure library](https://github.com/divs1210/functional-core-async).
 
+## Usage
+
+Let's look at an everyday async call to the database to fetch a string
+corresponding to the given id -
+
+### Simple Callback
+```javascript
+function asyncCallback () {
+    getUserName('id1', function (resp) {
+        var massaged_resp = resp.toUpperCase();
+        console.log("via callback:" + massaged_resp);
+        console.log("but can't access outside callback :(");
+    });
+}
+```
+
+The function fires an async query to the db and returns immediately.
+
+In this implementation, the response is locked inside the callback
+and whatever code needs access to it should be put inside that callback.
+
+This leads to what is called [callback-hell](http://callbackhell.com/),
+which can be escaped with the help of `channels` and `go` blocks.
+
+### Channels to The Rescue
+```javascript
+function asyncChannel () {
+    var ch = chan();
+    getUserName('id1', function (resp) {
+        put(ch, resp);
+    });
+    
+    return gotake(ch, function (resp) {
+        massaged_resp = resp.toUpperCase();
+        console.log("via channel/go:" + massaged_resp);
+        return massaged_resp;
+    });
+}
+```
+In this version, we have modified the callback to just put the response onto
+the channel `ch`. The db call is made asynchronously and the call to print
+is executed immediately afterwards.
+
+We then wait for the response in a separate `go` block, and return the massaged
+value. The `go` block returns a channel that will eventually have massaged_resp.
+So now we can do:
+
+```javascript
+var ch = asyncChannel();
+gotake(ch, function (v) {
+    console.log("escaped callback hell!" + v);
+});
+```
 
 ## The Hot Dog Machine Process You’ve Been Longing For
 
@@ -53,7 +106,7 @@ gotake(outCh, function(v){
 ```
 
 ## TODO
-- backpressure
+- parking `put`
 - `alts!`
 
 ## License
