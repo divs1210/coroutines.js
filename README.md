@@ -16,7 +16,7 @@ almost, but not quite, entirely unlike tea.
 
 # coroutines.js
 
-Green (co-operative) threads for JavaScript! A port of [this Clojure library](https://github.com/divs1210/functional-core-async).
+Green (co-operative) threads for JavaScript! A port of [this library](https://github.com/divs1210/functional-core-async).
 
 ## Why
 
