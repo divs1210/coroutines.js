@@ -1,6 +1,29 @@
+```
+He had found a Nutri-Matic machine which had provided him with
+a plastic cup filled with a liquid that was almost, but not quite,
+entirely unlike tea.
+
+The way it functioned was very interesting. When the Drink button
+was pressed it made an instant but highly detailed examination of
+the subject's taste buds, a spectroscopic analysis of the subject's
+metabolism and then sent tiny experimental signals down the neural
+pathways to the taste centers of the subject's brain to see what
+was likely to go down well. However, no one knew quite why it did
+this because it invariably delivered a cupful of liquid that was
+almost, but not quite, entirely unlike tea.
+```
+*from The Hitchhiker's Guide to the Galaxy*
+
 # coroutines.js
 
-Lightweight threads for JavaScript! A port of [this Clojure library](https://github.com/divs1210/functional-core-async).
+Green (co-operative) threads for JavaScript! A port of [this Clojure library](https://github.com/divs1210/functional-core-async).
+
+## Why
+
+- It makes writing concurrent software much simpler by getting data out
+of callbacks through the use of magic portals called `channels`.
+- It provides green threads via `go` blocks that can park and be multiplexed
+over the event loop, and communicate over channels.
 
 ## Usage
 
@@ -123,19 +146,18 @@ put(inCh, "pocket lint");
 gotake(outCh, function(v){
   console.log(v);
 });
-
-put(inCh, 3);
-gotake(outCh, function(v){
-  console.log(v);
-});
-
-put(inCh, 3);
-gotake(outCh, function(v){
-  console.log(v);
-});
-
 // => wilted lettuce
+
+put(inCh, 3);
+gotake(outCh, function(v){
+  console.log(v);
+});
 // => hot dog
+
+put(inCh, 3);
+gotake(outCh, function(v){
+  console.log(v);
+});
 // => hot dog
 ```
 
