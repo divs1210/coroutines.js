@@ -1,13 +1,45 @@
 # coroutines.js
 
-Coroutines for JavaScript. A port of [this Clojure library](https://github.com/divs1210/functional-core-async).
+Lightweight threads for JavaScript! A port of [this Clojure library](https://github.com/divs1210/functional-core-async).
 
 ## Usage
 
-Let's look at an everyday async call to the database to fetch a string
-corresponding to the given id -
+### 'THREADS'
+
+```javascript
+// a channel
+var ch = chan();
+
+// this is an async consumer that will read one
+// value from ch when available. returns a
+// channel that will eventually contain the return
+// value of its function.
+go(function () {
+    // when a value is available on ch, takes it
+    // and calls the callback. returns the return value
+    // of the callback. can only be used inside go blocks.
+    take(ch, function (v) {
+        console.log(v);
+    });
+});
+
+// which can also be written as
+gotake(ch, function (v) {
+    console.log(v);
+});
+
+// send a value on the channel
+put(ch, "hi!");
+// => hi!
+```
+We can spawn thousands of these 'threads', and structure our
+code around producers, consumers, and queues.
 
 ### Simple Callback
+
+Let's look at an everyday async call to the database to fetch
+a string corresponding to the given id:
+
 ```javascript
 function asyncCallback () {
     getUserName('id1', function (resp) {
@@ -42,12 +74,9 @@ function asyncChannel () {
 }
 ```
 In this version, we have modified the callback to just put the response onto
-the channel `ch`. The db call is made asynchronously and the call to print
-is executed immediately afterwards.
-
-We then wait for the response in a separate `go` block, and return the massaged
-value. The `go` block returns a channel that will eventually have massaged_resp.
-So now we can do:
+the channel `ch`. We then wait for the response in a separate `go` block, and
+return the massaged value. The `go` block returns a channel that will eventually
+have `massaged_resp`. So now we can do:
 
 ```javascript
 var ch = asyncChannel();
@@ -80,7 +109,12 @@ function hotDogMachine(inCh, outCh, hc) {
     });
   }
 }
+```
+This function starts a new cooperative process that will consume from `inCh`
+and put on `outCh`. If input is 3, it dispenses a hot dog and decrements its
+count. If input is something else, it despenses wilted lettuce.
 
+```javascript
 var inCh = chan();
 var outCh = chan();
 var hdm = hotDogMachine(inCh, outCh, 2);
@@ -106,7 +140,7 @@ gotake(outCh, function(v){
 ```
 
 ## TODO
-- parking `put`
+- backpressure: parking `put`
 - `alts!`
 
 ## License
