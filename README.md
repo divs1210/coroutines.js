@@ -113,21 +113,21 @@ gotake(ch, function (v) {
 Here's a port of the [Hot Dog Machine](https://www.braveclojure.com/core-async/)
 
 ```javascript
-function hotDogMachine(inCh, outCh, hc) {
-  var recurse = function (hc){
+function hotDogMachine(inCh, outCh, hotDogsLeft) {
+  var recurse = function (hotDogsLeft){
     go(function(){
-      hotDogMachine(inCh, outCh, hc);
+      hotDogMachine(inCh, outCh, hotDogsLeft);
     });
   }
 
-  if(hc > 0){
+  if(hotDogsLeft > 0){
     gotake(inCh, function(input){
       if(input == 3){
         put(outCh, "hot dog");
-        recurse(hc-1);
+        recurse(hotDogsLeft-1);
       } else {
         put(outCh, "wilted lettuce");
-        recurse(hc);
+        recurse(hotDogsLeft);
       }
     });
   }
