@@ -69,7 +69,7 @@ function execute () {
   var ok = job[1];
   var res = f();
 
-  if (res && res.t == PARKING_TAKE) {
+  if (res != null && res.t == PARKING_TAKE) {
     var c = res.c;
     var v = poll(c);
     if (v != NIL) {
@@ -78,7 +78,7 @@ function execute () {
     } else {
       scheduleJob(function () {return res;}, ok);
     }
-  } else if (res && res.t == PARKING_PUT) {
+  } else if (res != null && res.t == PARKING_PUT) {
     var c = res.c;
     var v = res.v;
     if (c.c.length < c.w) {
