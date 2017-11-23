@@ -18,6 +18,8 @@ almost, but not quite, entirely unlike tea.
 
 Green (co-operative) threads for JavaScript! A port of [this library](https://github.com/divs1210/functional-core-async).
 
+*CSP - S = Communicating Processes = Green Threads!*
+
 ## Why
 
 - It makes writing concurrent software much simpler by getting data out
