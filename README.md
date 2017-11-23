@@ -27,7 +27,7 @@ over the event loop, and communicate over channels.
 
 ## Usage
 
-### 'THREADS'
+### 'Threads'
 
 ```javascript
 // a channel
@@ -154,7 +154,57 @@ gotake(outCh, console.log);
 // => hot dog
 ```
 
+### Consumers
+
+For writing async consumers like the one above, we can also use `goconsume`:
+```javascript
+var c = chan()
+goconsume(c, function(inp, recur) {
+  if (inp) {
+    console.log(inp);
+    recur();
+  }
+});
+
+goput(c, "hi");
+// => hi
+
+goput(c, "bye");
+// => bye
+
+goput(c, false);
+// consumer dies
+
+goput(c, "ping");
+// damning silence
+```
+
+`goconsume` also takes the state to be maintained across calls as an optional argument:
+```javascript
+var c = chan();
+goconsume(c, function(inp, recur, n) {
+  console.log(n, inp);
+  if (n+1 < 3) {
+    recur(n+1);
+  }
+}, 0);
+
+goput(c, "hi");
+// => 0, hi
+
+goput(c, "hola");
+// => 1, hola
+
+goput(c, "bye");
+// => 2, bye
+
+goput(c, "ping");
+// => crickets chirping
+```
+
 ## TODO
+- optimize scheduler: replace round-robin scheduling with per-channel queues and listeners
+- `goproduce`
 - `alts!`
 
 ## License
