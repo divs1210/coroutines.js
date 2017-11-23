@@ -91,7 +91,7 @@ function asyncChannel () {
     getUserName('id1', function (resp) {
         goput(ch, resp);
     });
-    
+
     return gotake(ch, function (resp) {
         massaged_resp = resp.toUpperCase();
         console.log("via channel/go:" + massaged_resp);

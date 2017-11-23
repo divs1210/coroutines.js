@@ -151,3 +151,19 @@ then is optional, like in put.
 function goput (chan, val, then) {
   return gocall(put, chan, val, then);
 }
+
+
+/*
+Starts a consumer that takes val from
+chan and calls f(val, recur, state).
+Call recur(newState) to loop.
+*/
+function goconsume (chan, f, initialState) {
+  function recur(state) {
+    return goconsume(chan, f, state);
+  }
+
+  return gotake(chan, function (v) {
+    return f(v, recur, initialState);
+  });
+}
