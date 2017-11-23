@@ -31,7 +31,7 @@ function poll (chan) {
 
 /*
 Parking take - use inside go blocks
-or with gotake.
+or use gotake.
 */
 function take (chan, bodyFn) {
   return {t: PARKING_TAKE,
@@ -41,7 +41,7 @@ function take (chan, bodyFn) {
 
 /*
 Parking put - use inside go blocks
-or with goput. body is optional.
+or use goput. body is optional.
 */
 function put (chan, val, bodyFn) {
   var bodyFn = bodyFn || function () {};
@@ -116,16 +116,28 @@ function go (f) {
   return c;
 }
 
+
+/*
+Takes a function and args, and calls it
+in a separate 'thread'. Returns a channel.
+*/
+function gocall () {
+  var f = arguments[0];
+  var args = Array.prototype.slice.call(arguments, 1);
+  return go(function () {
+    return f.apply(null, args);
+  });
+}
+
+
 /*
 A combination of go and take.
 Takes something from c and calls
 then(received_value), returning a channel
 that will eventually contain the result.
 */
-function gotake (c, then) {
-  return go(function () {
-    return take(c, then);
-  });
+function gotake (chan, then) {
+  return gocall(take, chan, then);
 }
 
 
@@ -134,9 +146,8 @@ A combination of go and put.
 Puts v on c and calls then(), returning
 a channel that will eventually contain
 the result.
+then is optional, like in put.
 */
-function goput (c, v, then) {
-  return go(function () {
-    return put(c, v, then);
-  });
+function goput (chan, val, then) {
+  return gocall(put, chan, val, then);
 }

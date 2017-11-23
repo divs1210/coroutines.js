@@ -33,10 +33,8 @@ over the event loop, and communicate over channels.
 // a channel
 var ch = chan();
 
-// this is an async consumer that will read one
-// value from ch when available. returns a
-// channel that will eventually contain the return
-// value of its function.
+// go blocks execute their functions
+// on a separate 'thread'.
 go(function () {
     // when a value is available on ch, takes it
     // and calls the callback. returns the return value
@@ -46,7 +44,7 @@ go(function () {
     });
 });
 
-// which can also be written as
+// the above can also be written as
 gotake(ch, function (v) {
     console.log(v);
 });
@@ -56,6 +54,9 @@ gotake(ch, function (v) {
 // like gotake
 goput(ch, "hi!");
 // => hi!
+
+// there's also gocall
+gocall(alert, 'hi!');
 ```
 We can spawn thousands of these 'threads', and structure our
 code around producers, consumers, and queues.
@@ -116,20 +117,16 @@ Here's a port of the [Hot Dog Machine](https://www.braveclojure.com/core-async/)
 
 ```javascript
 function hotDogMachine(inCh, outCh, hotDogsLeft) {
-  var recurse = function (hotDogsLeft) {
-    go(function(){
-      hotDogMachine(inCh, outCh, hotDogsLeft);
-    });
-  }
-
   if(hotDogsLeft > 0) {
     gotake(inCh, function(input) {
       if(input == 3) {
-        goput(outCh, "hot dog");
-        recurse(hotDogsLeft-1);
+        goput(outCh, "hot dog", function () {
+          hotDogMachine(inCh, outCh, hotDogsLeft-1);
+        });
       } else {
-        goput(outCh, "wilted lettuce");
-        recurse(hotDogsLeft);
+        goput(outCh, "wilted lettuce", function () {
+          hotDogMachine(inCh, outCh, hotDogsLeft);
+        });
       }
     });
   }
@@ -142,7 +139,7 @@ count. If input is something else, it despenses wilted lettuce.
 ```javascript
 var inCh = chan();
 var outCh = chan();
-var hdm = hotDogMachine(inCh, outCh, 2);
+hotDogMachine(inCh, outCh, 2); // start consumer
 
 goput(inCh, "pocket lint");
 gotake(outCh, function(v){
