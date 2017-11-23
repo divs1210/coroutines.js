@@ -139,24 +139,18 @@ count. If input is something else, it despenses wilted lettuce.
 ```javascript
 var inCh = chan();
 var outCh = chan();
-hotDogMachine(inCh, outCh, 2); // start consumer
+hotDogMachine(inCh, outCh, 2); // start async process
 
 goput(inCh, "pocket lint");
-gotake(outCh, function(v){
-  console.log(v);
-});
+gotake(outCh, console.log);
 // => wilted lettuce
 
 goput(inCh, 3);
-gotake(outCh, function(v){
-  console.log(v);
-});
+gotake(outCh, console.log);
 // => hot dog
 
 goput(inCh, 3);
-gotake(outCh, function(v){
-  console.log(v);
-});
+gotake(outCh, console.log);
 // => hot dog
 ```
 
