@@ -52,7 +52,9 @@ gotake(ch, function (v) {
 });
 
 // send a value on the channel
-put(ch, "hi!");
+// also takes an optional function,
+// like gotake
+goput(ch, "hi!");
 // => hi!
 ```
 We can spawn thousands of these 'threads', and structure our
@@ -86,7 +88,7 @@ which can be escaped with the help of `channels` and `go` blocks.
 function asyncChannel () {
     var ch = chan();
     getUserName('id1', function (resp) {
-        put(ch, resp);
+        goput(ch, resp);
     });
     
     return gotake(ch, function (resp) {
@@ -123,10 +125,10 @@ function hotDogMachine(inCh, outCh, hotDogsLeft) {
   if(hotDogsLeft > 0) {
     gotake(inCh, function(input) {
       if(input == 3) {
-        put(outCh, "hot dog");
+        goput(outCh, "hot dog");
         recurse(hotDogsLeft-1);
       } else {
-        put(outCh, "wilted lettuce");
+        goput(outCh, "wilted lettuce");
         recurse(hotDogsLeft);
       }
     });
@@ -142,19 +144,19 @@ var inCh = chan();
 var outCh = chan();
 var hdm = hotDogMachine(inCh, outCh, 2);
 
-put(inCh, "pocket lint");
+goput(inCh, "pocket lint");
 gotake(outCh, function(v){
   console.log(v);
 });
 // => wilted lettuce
 
-put(inCh, 3);
+goput(inCh, 3);
 gotake(outCh, function(v){
   console.log(v);
 });
 // => hot dog
 
-put(inCh, 3);
+goput(inCh, 3);
 gotake(outCh, function(v){
   console.log(v);
 });
@@ -162,7 +164,6 @@ gotake(outCh, function(v){
 ```
 
 ## TODO
-- backpressure: parking `put`
 - `alts!`
 
 ## License

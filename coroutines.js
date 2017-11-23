@@ -2,14 +2,18 @@
 
 // CONSTANTS
 // =========
-const NIL = 'async.js/nil';
-const PARKING_TAKE = 'async.js/take';
-
+const NIL = 'coroutines.js/nil';
+const PARKING_TAKE = 'coroutines.js/take';
+const PARKING_PUT = 'coroutines.js/put';
 
 // CHANNELS
 // ========
-function chan () {
-  return [];
+/*
+Width is 1 by default.
+*/
+function chan (width) {
+  return {w: width || 1,
+          c: []};
 }
 
 
@@ -20,8 +24,8 @@ Retuns a value from chan if available,
 else NIL.
 */
 function poll (chan) {
-  if (chan.length > 0)
-    return chan.shift();
+  if (chan.c.length > 0)
+    return chan.c.shift();
   return NIL;
 }
 
@@ -36,19 +40,24 @@ function take (chan, bodyFn) {
 }
 
 /*
-Put a value on to chan.
+Parking put - use inside go blocks
+or with goput. body is optional.
 */
-function put (chan, val) {
-  chan.push(val);
+function put (chan, val, bodyFn) {
+  var bodyFn = bodyFn || function () {};
+  return {t: PARKING_PUT,
+          c: chan,
+          v: val,
+          f: bodyFn};
 }
 
 
 // ASYNC EXECUTOR
 // ==============
-var jobQueue = chan();
+const jobQueue = [];
 
 function scheduleJob (f, ok) {
-  put(jobQueue, [f, ok]);
+  jobQueue.push([f, ok]);
 }
 
 function execute () {
@@ -69,12 +78,21 @@ function execute () {
     } else {
       scheduleJob(function () {return res;}, ok);
     }
+  } else if (res && res.t == PARKING_PUT) {
+    var c = res.c;
+    var v = res.v;
+    if (c.c.length < c.w) {
+      c.c.push(v);
+      ok(res.f());
+    } else {
+      scheduleJob(function () {return res;}, ok);
+    }
   } else {
     ok(res);
   }
 }
 
-var asyncExecutor = setInterval(function (){
+const asyncExecutor = setInterval(function (){
   try {
     execute();
   } catch (e){
@@ -93,13 +111,13 @@ the result.
 function go (f) {
   var c = chan();
   scheduleJob(f, function (v) {
-    put(c, v);
+    c.c.push(v);
   });
   return c;
 }
 
 /*
-A combination of go and take,
+A combination of go and take.
 Takes something from c and calls
 then(received_value), returning a channel
 that will eventually contain the result.
@@ -107,5 +125,18 @@ that will eventually contain the result.
 function gotake (c, then) {
   return go(function () {
     return take(c, then);
+  });
+}
+
+
+/*
+A combination of go and put.
+Puts v on c and calls then(), returning
+a channel that will eventually contain
+the result.
+*/
+function goput (c, v, then) {
+  return go(function () {
+    return put(c, v, then);
   });
 }
