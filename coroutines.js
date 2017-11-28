@@ -55,10 +55,42 @@ function put (chan, val, bodyFn) {
 // ASYNC EXECUTOR
 // ==============
 const jobQueue = [];
+const parkedTakes = {};
+const parkedPuts = {};
+
 
 function scheduleJob (f, ok) {
   jobQueue.push([f, ok]);
 }
+
+
+function parkTake (chan, res, ok) {
+  parkedTakes[chan] = parkedTakes[chan] || [];
+  parkedTakes[chan].push([function () { return res; }, ok]);
+}
+
+
+function unparkTake (chan) {
+  if (parkedTakes[chan] && parkedTakes[chan].length > 0) {
+    var parkedTake = parkedTakes[chan].shift();
+    scheduleJob(parkedTake[0], parkedTake[1]);
+  }
+}
+
+
+function parkPut (chan, res, ok) {
+  parkedPuts[chan] = parkedPuts[chan] || [];
+  parkedPuts[chan].push([function () { return res; }, ok]);
+}
+
+
+function unparkPut (chan) {
+  if (parkedPuts[chan] && parkedPuts[chan].length > 0) {
+    var parkedPut = parkedPuts[chan].shift();
+    scheduleJob(parkedPut[0], parkedPut[1]);
+  }
+}
+
 
 function execute () {
   if (jobQueue.length < 1)
@@ -75,8 +107,9 @@ function execute () {
     if (v != NIL) {
       var f = res.f;
       ok(f(v));
+      unparkPut(c);
     } else {
-      scheduleJob(function () {return res;}, ok);
+      parkTake(c, res, ok);
     }
   } else if (res != null && res.t == PARKING_PUT) {
     var c = res.c;
@@ -84,8 +117,9 @@ function execute () {
     if (c.c.length < c.w) {
       c.c.push(v);
       ok(res.f());
+      unparkTake(c);
     } else {
-      scheduleJob(function () {return res;}, ok);
+      parkPut(c, res, ok);
     }
   } else {
     ok(res);

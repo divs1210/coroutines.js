@@ -205,9 +205,9 @@ goput(c, "ping");
 ```
 
 ## TODO
-- optimize scheduler: replace round-robin scheduling with per-channel queues and listeners
 - `goproduce`
 - `alts!`
+- `close!`
 
 ## License
 
