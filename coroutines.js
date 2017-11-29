@@ -150,7 +150,6 @@ function go (f) {
   return c;
 }
 
-
 /*
 Takes a function and args, and calls it
 in a separate 'thread'. Returns a channel.
@@ -163,7 +162,6 @@ function gocall () {
   });
 }
 
-
 /*
 A combination of go and take.
 Takes something from c and calls
@@ -173,7 +171,6 @@ that will eventually contain the result.
 function gotake (chan, then) {
   return gocall(take, chan, then);
 }
-
 
 /*
 A combination of go and put.
@@ -186,6 +183,17 @@ function goput (chan, val, then) {
   return gocall(put, chan, val, then);
 }
 
+/*
+Calls f(recur, initialState).
+f can call recur(state) to loop.
+*/
+function goloop (f, initialState) {
+  function recur (state) {
+    return goloop(f, state);
+  }
+
+  return gocall(f, recur, initialState);
+}
 
 /*
 Starts a consumer that takes val from
