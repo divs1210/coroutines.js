@@ -27,6 +27,10 @@ of callbacks through the use of magic portals called `channels`.
 - It provides green threads via `go` blocks that can park and be multiplexed
 over the event loop, and communicate over channels.
 
+## Intro Video
+
+You can see a demo explaining the core concepts [here](https://www.youtube.com/watch?v=bjQenG-gcME).
+
 ## Usage
 
 ### 'Threads'
