@@ -45,7 +45,7 @@ go(function () {
     // when a value is available on ch, takes it
     // and calls the callback. returns the return value
     // of the callback. can only be used inside go blocks.
-    take(ch, function (v) {
+    return take(ch, function (v) {
         console.log(v);
     });
 });
@@ -205,7 +205,7 @@ goput(c, "bye");
 // => 2, bye
 
 goput(c, "ping");
-// => crickets chirping
+// crickets chirping
 ```
 
 ## TODO
